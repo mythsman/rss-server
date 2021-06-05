@@ -32,8 +32,8 @@ public class HostInitializer implements InitializingBean {
     public void afterPropertiesSet() {
 
         okHttpClient = new OkHttpClient().newBuilder()
-                .callTimeout(Duration.ofSeconds(5))
-                .readTimeout(Duration.ofSeconds(5))
+                .callTimeout(Duration.ofSeconds(10))
+                .readTimeout(Duration.ofSeconds(10))
                 .followSslRedirects(true)
                 .followRedirects(true)
                 .connectTimeout(Duration.ofSeconds(1))

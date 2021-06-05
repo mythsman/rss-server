@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
  */
 @Service
 public class FeedCheckScheduler implements InitializingBean {
-    private static final Long CHECK_INTERVAL_MILLIS = TimeUnit.MINUTES.toMillis(10);
+    private static final Long CHECK_INTERVAL_MILLIS = TimeUnit.DAYS.toMillis(1);
     private static final Logger logger = LoggerFactory.getLogger(FeedCheckScheduler.class);
 
     @Autowired

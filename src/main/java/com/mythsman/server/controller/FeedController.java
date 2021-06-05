@@ -32,10 +32,12 @@ public class FeedController {
     }
 
     @RequestMapping("/submit_host")
-    public void submitHost(@RequestParam("host") String host) {
-        logger.info("submit_host, host: {}", JsonUtils.toJson(host));
-        if (HOST_PATTERN.matcher(host).matches()) {
-            feedService.submitHost(host.toLowerCase().trim());
+    public void submitHost(@RequestParam("host") List<String> hosts) {
+        logger.info("submit_host, hosts: {}", JsonUtils.toJson(hosts));
+        for (String host : hosts) {
+            if (HOST_PATTERN.matcher(host).matches()) {
+                feedService.submitHost(host.toLowerCase().trim());
+            }
         }
     }
 

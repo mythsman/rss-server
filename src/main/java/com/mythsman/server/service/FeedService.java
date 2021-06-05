@@ -1,24 +1,19 @@
 package com.mythsman.server.service;
 
 import com.mythsman.server.entity.FeedEntity;
-import com.mythsman.server.enums.FeedStatusEnum;
 import com.mythsman.server.enums.FeedTypeEnum;
 import com.mythsman.server.manager.FeedUpdater;
 import com.mythsman.server.manager.HostInitializer;
 import com.mythsman.server.repository.FeedRepository;
-import com.mythsman.server.util.JsonUtils;
 import com.mythsman.server.util.UUIDUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
-import java.util.Date;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * @author tusenpo
@@ -49,11 +44,13 @@ public class FeedService {
         }
         Pair<FeedTypeEnum, String> pair = hostInitializer.submit(host);
         if (pair != null) {
-            FeedEntity feedEntity = feedUpdater.updateFeed(host, pair.getRight(), pair.getLeft().getCode());
-            if (feedEntity != null) {
-                feedEntity.setUuid(UUIDUtils.createUUID());
-                feedRepository.save(feedEntity);
-            }
+            CompletableFuture.runAsync(() -> {
+                FeedEntity feedEntity = feedUpdater.updateFeed(host, pair.getRight(), pair.getLeft().getCode());
+                if (feedEntity != null) {
+                    feedEntity.setUuid(UUIDUtils.createUUID());
+                    feedRepository.save(feedEntity);
+                }
+            });
             return pair.getRight();
         }
         return null;
