@@ -35,21 +35,21 @@ public class FeedService {
      * @param host 站点域名
      * @return 站点的 feedUrl or null
      */
-    public String submitHost(String host) {
+    public FeedEntity submitHost(String host) {
         FeedEntity entity = feedRepository.findByHost(host);
         if (entity != null) {
-            return entity.getHost();
+            return entity;
         }
-        String feedUrl = hostInitializer.submit(host);
-        if (feedUrl != null) {
+        entity = hostInitializer.submit(host);
+        if (entity != null) {
+            entity.setHost(host);
+            FeedEntity finalEntity = entity;
             CompletableFuture.runAsync(() -> {
-                FeedEntity feedEntity = feedUpdater.updateFeed(host, feedUrl);
-                if (feedEntity != null) {
-                    feedEntity.setUuid(UUIDUtils.createUUID());
-                    feedRepository.save(feedEntity);
-                }
+                feedUpdater.updateFeed(finalEntity);
+                finalEntity.setUuid(UUIDUtils.createUUID());
+                feedRepository.save(finalEntity);
             });
-            return feedUrl;
+            return entity;
         }
         return null;
     }

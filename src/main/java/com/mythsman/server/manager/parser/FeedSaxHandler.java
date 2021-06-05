@@ -3,6 +3,7 @@ package com.mythsman.server.manager.parser;
 import com.mythsman.server.entity.FeedEntity;
 import com.mythsman.server.enums.FeedTypeEnum;
 import com.mythsman.server.exceptions.SaxParseTerminated;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.Attributes;
@@ -11,10 +12,19 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 public class FeedSaxHandler extends DefaultHandler {
     private static final Logger logger = LoggerFactory.getLogger(FeedSaxHandler.class);
+
+    private static final List<Pair<String, Integer>> dateTimePatterns = Arrays.asList(
+            Pair.of("EEE, dd MMM yyyy HH:mm:ss zzz", 0),
+            Pair.of("yyyy-MM-dd'T'HH:mm:ssXXX", 0),
+            Pair.of("yyyy-MM-dd'T'HH:mm:ss.sss'Z'", Calendar.getInstance().get(Calendar.ZONE_OFFSET))
+    );
 
     private final FeedEntity feedEntity;
 
@@ -38,7 +48,7 @@ public class FeedSaxHandler extends DefaultHandler {
 
     @Override
     public void characters(char[] ch, int start, int length) throws SAXException {
-        String data = new String(ch, start, length);
+        String data = new String(ch, start, length).trim();
         switch (path.toString()) {
             case "/rss/channel/title":
                 feedEntity.setTitle(data);
@@ -84,24 +94,16 @@ public class FeedSaxHandler extends DefaultHandler {
         path.delete(path.length() - qName.length() - 1, path.length());
     }
 
-
     private Date parseDate(String text) {
-        Date date = null;
-        try {
-            date = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz").parse(text);
-            feedEntity.setLastModified(date);
-        } catch (ParseException ignored) {
-        }
-        if (date == null) {
+        for (Pair<String, Integer> patternPair : dateTimePatterns) {
             try {
-                date = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX").parse(text);
-                feedEntity.setLastModified(date);
+                String pattern = patternPair.getLeft();
+                Integer offset = patternPair.getRight();
+                Date date = new SimpleDateFormat(pattern).parse(text);
+                return new Date(date.getTime() + offset);
             } catch (ParseException ignored) {
             }
         }
-        if (date == null) {
-            throw new RuntimeException("date format failed: " + text);
-        }
-        return date;
+        throw new RuntimeException("date format failed: " + text);
     }
 }

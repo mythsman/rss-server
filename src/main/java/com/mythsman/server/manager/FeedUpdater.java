@@ -2,6 +2,7 @@ package com.mythsman.server.manager;
 
 import com.mythsman.server.entity.FeedEntity;
 import com.mythsman.server.enums.FeedStatusEnum;
+import com.mythsman.server.enums.FeedTypeEnum;
 import com.mythsman.server.exceptions.SaxParseTerminated;
 import com.mythsman.server.manager.parser.FeedSaxHandler;
 import okhttp3.OkHttpClient;
@@ -45,17 +46,15 @@ public class FeedUpdater implements InitializingBean {
                 .build();
     }
 
-    public FeedEntity updateFeed(String host, String feedUrl) {
-        FeedEntity feedEntity = new FeedEntity();
-        feedEntity.setFeedPath(feedUrl);
-        feedEntity.setHost(host);
+    public void updateFeed(FeedEntity feedEntity) {
         feedEntity.setLastCheckTime(new Date());
 
-        Request request = new Request.Builder().url(feedUrl).get().build();
+        Request request = new Request.Builder().url(feedEntity.getFeedPath()).get().build();
         Response response;
         try {
             response = okHttpClient.newCall(request).execute();
             if (response.code() != HttpStatus.OK.value()) {
+                feedEntity.setFeedType(FeedTypeEnum.UNKNOWN.getCode());
                 feedEntity.setStatus(FeedStatusEnum.ABNORMAL.getCode());
             } else if (response.body() != null) {
                 InputStream inputStream = response.body().byteStream();
@@ -68,9 +67,8 @@ public class FeedUpdater implements InitializingBean {
             }
         } catch (Exception e) {
             feedEntity.setStatus(FeedStatusEnum.ABNORMAL.getCode());
-            logger.error("update feed failed for {} ", feedUrl, e);
+            logger.error("update feed failed for {} ", feedEntity.getFeedPath(), e);
         }
-        return feedEntity;
     }
 
 }
