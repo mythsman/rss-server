@@ -1,11 +1,9 @@
 package com.mythsman.server.manager;
 
-import com.mythsman.server.enums.FeedTypeEnum;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
@@ -18,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.nio.file.Paths;
 import java.time.Duration;
+import java.util.regex.Pattern;
 
 /**
  * @author tusenpo
@@ -46,48 +45,38 @@ public class HostInitializer implements InitializingBean {
      * 根据 host 名，自动发现 feed 地址
      * 找不到则返回 null
      */
-    public Pair<FeedTypeEnum, String> submit(String host) {
+    public String submit(String host) {
         //测试是http还是https。。
-        Pair<FeedTypeEnum, String> pair = fetchFeedUrl("https://" + host);
-        if (pair == null) {
-            pair = fetchFeedUrl("http://" + host);
+        String feedUrl = fetchFeedUrl("https://" + host);
+        if (feedUrl == null) {
+            feedUrl = fetchFeedUrl("http://" + host);
         }
-        return pair;
+        return feedUrl;
     }
 
     /**
      * @param url 主站url
-     * @return 该站的 feedUrl,feedType  链接，网站不存在则返 null
+     * @return 该站的 feedUrl  链接，没有feedUrl返回空字符串，网站不存在则返 null
      */
-    private Pair<FeedTypeEnum, String> fetchFeedUrl(String url) {
+    private String fetchFeedUrl(String url) {
         Request request = new Request.Builder().url(url).get().build();
         Response response;
         try {
             response = okHttpClient.newCall(request).execute();
             if (response.code() != HttpStatus.OK.value()) {
-                return Pair.of(FeedTypeEnum.UNKNOWN, "");
+                return "";
             }
             if (response.body() != null) {
 
                 Document document = Jsoup.parse(response.body().string());
-                Elements rssElement = document.select(new Evaluator.AttributeWithValue("type", "application/rss+xml"));
-                String rssHref = rssElement.attr("href");
-                if (StringUtils.isNotBlank(rssHref)) {
-                    if (!rssHref.startsWith("http")) {
-                        rssHref = Paths.get(response.request().url().toString(), rssHref).toString();
+                Elements feedElement = document.select(new Evaluator.AttributeWithValueMatching("type", Pattern.compile("application/(rss|atom)\\+xml")));
+                String feedHref = feedElement.attr("href");
+                if (StringUtils.isNotBlank(feedHref)) {
+                    if (!feedHref.startsWith("http")) {
+                        feedHref = Paths.get(response.request().url().toString(), feedHref).toString();
                     }
-                    logger.info("feed path : {}", rssHref);
-                    return Pair.of(FeedTypeEnum.RSS, rssHref);
-                }
-
-                Elements atomElement = document.select(new Evaluator.AttributeWithValue("type", "application/atom+xml"));
-                String atomHref = atomElement.attr("href");
-                if (StringUtils.isNotBlank(atomHref)) {
-                    if (!atomHref.startsWith("http")) {
-                        atomHref = Paths.get(response.request().url().toString(), atomHref).toString();
-                    }
-                    logger.info("feed path : {}", atomHref);
-                    return Pair.of(FeedTypeEnum.ATOM, atomHref);
+                    logger.info("feed path : {}", feedHref);
+                    return feedHref;
                 }
             }
         } catch (Exception e) {

@@ -58,7 +58,7 @@ public class FeedCheckScheduler implements InitializingBean {
     }
 
     private void handleFeed(FeedEntity feedEntity) {
-        FeedEntity resultEntity = feedUpdater.updateFeed(feedEntity.getHost(), feedEntity.getFeedPath(), feedEntity.getFeedType());
+        FeedEntity resultEntity = feedUpdater.updateFeed(feedEntity.getHost(), feedEntity.getFeedPath());
         resultEntity.setId(feedEntity.getId());
         resultEntity.setUuid(feedEntity.getUuid());
         resultEntity.setGmtCreate(feedEntity.getGmtCreate());

@@ -2,10 +2,8 @@ package com.mythsman.server.manager;
 
 import com.mythsman.server.entity.FeedEntity;
 import com.mythsman.server.enums.FeedStatusEnum;
-import com.mythsman.server.enums.FeedTypeEnum;
 import com.mythsman.server.exceptions.SaxParseTerminated;
-import com.mythsman.server.manager.parser.AtomSaxHandler;
-import com.mythsman.server.manager.parser.RssSaxHandler;
+import com.mythsman.server.manager.parser.FeedSaxHandler;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -47,9 +45,8 @@ public class FeedUpdater implements InitializingBean {
                 .build();
     }
 
-    public FeedEntity updateFeed(String host, String feedUrl, Integer feedType) {
+    public FeedEntity updateFeed(String host, String feedUrl) {
         FeedEntity feedEntity = new FeedEntity();
-        feedEntity.setFeedType(feedType);
         feedEntity.setFeedPath(feedUrl);
         feedEntity.setHost(host);
         feedEntity.setLastCheckTime(new Date());
@@ -63,16 +60,9 @@ public class FeedUpdater implements InitializingBean {
             } else if (response.body() != null) {
                 InputStream inputStream = response.body().byteStream();
                 SAXParser saxParser = saxParserFactory.newSAXParser();
-                if (feedType == FeedTypeEnum.RSS.getCode()) {
-                    try {
-                        saxParser.parse(inputStream, new RssSaxHandler(feedEntity));
-                    } catch (SaxParseTerminated ignored) {
-                    }
-                } else if (feedType == FeedTypeEnum.ATOM.getCode()) {
-                    try {
-                        saxParser.parse(inputStream, new AtomSaxHandler(feedEntity));
-                    } catch (SaxParseTerminated ignored) {
-                    }
+                try {
+                    saxParser.parse(inputStream, new FeedSaxHandler(feedEntity));
+                } catch (SaxParseTerminated ignored) {
                 }
                 feedEntity.setStatus(FeedStatusEnum.NORMAL.getCode());
             }

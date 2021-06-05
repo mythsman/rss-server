@@ -1,12 +1,10 @@
 package com.mythsman.server.service;
 
 import com.mythsman.server.entity.FeedEntity;
-import com.mythsman.server.enums.FeedTypeEnum;
 import com.mythsman.server.manager.FeedUpdater;
 import com.mythsman.server.manager.HostInitializer;
 import com.mythsman.server.repository.FeedRepository;
 import com.mythsman.server.util.UUIDUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,16 +40,16 @@ public class FeedService {
         if (entity != null) {
             return entity.getHost();
         }
-        Pair<FeedTypeEnum, String> pair = hostInitializer.submit(host);
-        if (pair != null) {
+        String feedUrl = hostInitializer.submit(host);
+        if (feedUrl != null) {
             CompletableFuture.runAsync(() -> {
-                FeedEntity feedEntity = feedUpdater.updateFeed(host, pair.getRight(), pair.getLeft().getCode());
+                FeedEntity feedEntity = feedUpdater.updateFeed(host, feedUrl);
                 if (feedEntity != null) {
                     feedEntity.setUuid(UUIDUtils.createUUID());
                     feedRepository.save(feedEntity);
                 }
             });
-            return pair.getRight();
+            return feedUrl;
         }
         return null;
     }
