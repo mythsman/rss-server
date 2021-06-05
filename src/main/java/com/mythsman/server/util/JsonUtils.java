@@ -18,18 +18,32 @@ import java.io.IOException;
 public class JsonUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(JsonUtils.class);
-    private static final ObjectMapper objectMapper = new ObjectMapper();
+    private static final ObjectMapper camelMapper = new ObjectMapper();
+    private static final ObjectMapper snakeMapper = new ObjectMapper();
 
     static {
-        objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-        objectMapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
-        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        objectMapper.setPropertyNamingStrategy(PropertyNamingStrategies.LOWER_CAMEL_CASE);
+        camelMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        camelMapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
+        camelMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        camelMapper.setPropertyNamingStrategy(PropertyNamingStrategies.LOWER_CAMEL_CASE);
+
+        camelMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        camelMapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
+        camelMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        camelMapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
+    }
+
+    public static ObjectMapper getCamelMapper() {
+        return camelMapper;
+    }
+
+    public static ObjectMapper getSnakeMapper() {
+        return snakeMapper;
     }
 
     public static String toJson(Object object) {
         try {
-            return objectMapper.writeValueAsString(object);
+            return camelMapper.writeValueAsString(object);
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
         }
@@ -38,7 +52,7 @@ public class JsonUtils {
 
     public static <T> T fromJson(String json, Class<T> clazz) {
         try {
-            return (T) objectMapper.readValue(json, clazz);
+            return (T) camelMapper.readValue(json, clazz);
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
         }
@@ -47,7 +61,7 @@ public class JsonUtils {
 
     public static <T> T fromJson(String json, TypeReference<T> typeReference) {
         try {
-            return objectMapper.readValue(json, typeReference);
+            return camelMapper.readValue(json, typeReference);
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
         }
