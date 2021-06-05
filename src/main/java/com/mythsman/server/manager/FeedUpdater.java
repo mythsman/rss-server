@@ -19,6 +19,7 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import java.io.InputStream;
 import java.time.Duration;
+import java.util.Date;
 
 /**
  * @author tusenpo
@@ -46,11 +47,12 @@ public class FeedUpdater implements InitializingBean {
                 .build();
     }
 
-    public FeedEntity updateFeed(String host, String feedUrl, FeedTypeEnum feedTypeEnum) {
+    public FeedEntity updateFeed(String host, String feedUrl, Integer feedType) {
         FeedEntity feedEntity = new FeedEntity();
-        feedEntity.setFeedType(feedTypeEnum.getCode());
+        feedEntity.setFeedType(feedType);
         feedEntity.setFeedPath(feedUrl);
         feedEntity.setHost(host);
+        feedEntity.setLastCheckTime(new Date());
 
         Request request = new Request.Builder().url(feedUrl).get().build();
         Response response;
@@ -61,12 +63,12 @@ public class FeedUpdater implements InitializingBean {
             } else if (response.body() != null) {
                 InputStream inputStream = response.body().byteStream();
                 SAXParser saxParser = saxParserFactory.newSAXParser();
-                if (feedTypeEnum == FeedTypeEnum.RSS) {
+                if (feedType == FeedTypeEnum.RSS.getCode()) {
                     try {
                         saxParser.parse(inputStream, new RssSaxHandler(feedEntity));
                     } catch (SaxParseTerminated ignored) {
                     }
-                } else if (feedTypeEnum == FeedTypeEnum.ATOM) {
+                } else if (feedType == FeedTypeEnum.ATOM.getCode()) {
                     try {
                         saxParser.parse(inputStream, new AtomSaxHandler(feedEntity));
                     } catch (SaxParseTerminated ignored) {

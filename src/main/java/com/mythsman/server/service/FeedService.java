@@ -28,8 +28,6 @@ import java.util.concurrent.TimeUnit;
 public class FeedService {
     private static final Logger logger = LoggerFactory.getLogger(FeedService.class);
 
-    private static final Long CHECK_INTERVAL_MILLIS = TimeUnit.MINUTES.toMillis(1);
-
     @Autowired
     private FeedRepository feedRepository;
 
@@ -39,28 +37,21 @@ public class FeedService {
     @Autowired
     private FeedUpdater feedUpdater;
 
-    @PostConstruct
-    @Scheduled(cron = "12 * * * * ?")
-    public void schedule() {
-        Date checkDate = new Date(System.currentTimeMillis() - CHECK_INTERVAL_MILLIS);
-        List<FeedEntity> normalCandidates = feedRepository.findByLastCheckTimeBeforeAndStatusOrderByLastCheckTimeAsc(checkDate, FeedStatusEnum.NORMAL.getCode());
-        List<FeedEntity> abnormalCandidates = feedRepository.findByLastCheckTimeBeforeAndStatusOrderByLastCheckTimeAsc(checkDate, FeedStatusEnum.ABNORMAL.getCode());
-        logger.info("normal candidates : {}", JsonUtils.toJson(normalCandidates));
-        logger.info("abnormal candidates : {}", JsonUtils.toJson(abnormalCandidates));
-    }
-
 
     /**
      * @param host 站点域名
      * @return 站点的 feedUrl or null
      */
     public String submitHost(String host) {
+        FeedEntity entity = feedRepository.findByHost(host);
+        if (entity != null) {
+            return entity.getHost();
+        }
         Pair<FeedTypeEnum, String> pair = hostInitializer.submit(host);
         if (pair != null) {
-            FeedEntity feedEntity = feedUpdater.updateFeed(host, pair.getRight(), pair.getLeft());
+            FeedEntity feedEntity = feedUpdater.updateFeed(host, pair.getRight(), pair.getLeft().getCode());
             if (feedEntity != null) {
                 feedEntity.setUuid(UUIDUtils.createUUID());
-                feedEntity.setLastCheckTime(new Date());
                 feedRepository.save(feedEntity);
             }
             return pair.getRight();

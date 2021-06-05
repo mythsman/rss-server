@@ -13,6 +13,6 @@ class FeedUpdaterTest {
     void updateFeed() {
         FeedUpdater feedUpdater = new FeedUpdater();
         feedUpdater.afterPropertiesSet();
-        feedUpdater.updateFeed("blog.mythsman.com", "https://blog.mythsman.com/rss/", FeedTypeEnum.RSS);
+        feedUpdater.updateFeed("blog.mythsman.com", "https://blog.mythsman.com/rss/", FeedTypeEnum.RSS.getCode());
     }
 }
