@@ -8,6 +8,7 @@ import com.mythsman.server.manager.parser.FeedSaxHandler;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -48,7 +49,11 @@ public class FeedUpdater implements InitializingBean {
 
     public void updateFeed(FeedEntity feedEntity) {
         feedEntity.setLastCheckTime(new Date());
-
+        if (StringUtils.isBlank(feedEntity.getFeedPath())) {
+            feedEntity.setFeedType(FeedTypeEnum.UNKNOWN.getCode());
+            feedEntity.setStatus(FeedStatusEnum.ABNORMAL.getCode());
+            return;
+        }
         Request request = new Request.Builder().url(feedEntity.getFeedPath()).get().build();
         Response response;
         try {

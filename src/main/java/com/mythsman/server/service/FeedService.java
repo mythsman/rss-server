@@ -5,6 +5,7 @@ import com.mythsman.server.manager.FeedUpdater;
 import com.mythsman.server.manager.HostInitializer;
 import com.mythsman.server.repository.FeedRepository;
 import com.mythsman.server.util.UUIDUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +42,7 @@ public class FeedService {
             return entity;
         }
         entity = hostInitializer.submit(host);
-        if (entity != null) {
+        if (entity != null && StringUtils.isNotBlank(entity.getTitle())) {
             entity.setHost(host);
             FeedEntity finalEntity = entity;
             CompletableFuture.runAsync(() -> {

@@ -37,7 +37,7 @@ public class HostInitializer implements InitializingBean {
                 .readTimeout(Duration.ofSeconds(10))
                 .followSslRedirects(true)
                 .followRedirects(true)
-                .connectTimeout(Duration.ofSeconds(1))
+                .connectTimeout(Duration.ofSeconds(5))
                 .build();
 
     }
@@ -49,7 +49,7 @@ public class HostInitializer implements InitializingBean {
     public FeedEntity submit(String host) {
         //测试是http还是https。。
         FeedEntity feedEntity = fetchFeedUrl("https://" + host);
-        if (feedEntity != null) {
+        if (feedEntity == null) {
             feedEntity = fetchFeedUrl("http://" + host);
         }
         return feedEntity;
@@ -71,22 +71,29 @@ public class HostInitializer implements InitializingBean {
 
                 Document document = Jsoup.parse(response.body().string());
                 Element feedElement = document.selectFirst(new Evaluator.AttributeWithValueMatching("type", Pattern.compile("application/(rss|atom)\\+xml")));
-                String feedHref = feedElement.attr("href");
-                if (StringUtils.isNotBlank(feedHref)) {
-                    if (!feedHref.startsWith("http")) {
-                        feedHref = Paths.get(response.request().url().toString(), feedHref).toString();
-                    }
-                    logger.info("feed path : {}", feedHref);
+                FeedEntity feedEntity = new FeedEntity();
 
-                    FeedEntity feedEntity = new FeedEntity();
-                    feedEntity.setFeedPath(feedHref);
-                    Element titleElement = document.selectFirst(new Evaluator.Tag("title"));
+                if (feedElement != null) {
+                    String feedHref = feedElement.attr("href");
+                    if (StringUtils.isNotBlank(feedHref)) {
+                        if (feedHref.startsWith("//")) {
+                            feedHref = "https:" + feedHref;
+                        } else if (!feedHref.startsWith("http")) {
+                            feedHref = Paths.get(response.request().url().toString(), feedHref).toString();
+                        }
+                        logger.info("feed path : {}", feedHref);
+
+                        feedEntity.setFeedPath(feedHref);
+                    }
+                }
+                Element titleElement = document.selectFirst(new Evaluator.Tag("title"));
+                if (titleElement != null) {
                     String title = titleElement.text();
                     if (StringUtils.isNotBlank(title)) {
                         feedEntity.setTitle(title);
                     }
-                    return feedEntity;
                 }
+                return feedEntity;
             }
         } catch (Exception e) {
             logger.error("check url failed for {} ", url, e);
