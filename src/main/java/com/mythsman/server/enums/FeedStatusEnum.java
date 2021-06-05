@@ -6,9 +6,8 @@ package com.mythsman.server.enums;
  */
 public enum FeedStatusEnum {
     NORMAL(0),
-    NO_RSS(1),
-    FORBIDDEN(2),
-    STOPPED(3),
+    ABNORMAL(1),
+    STOPPED(2),
     ;
     int code;
 

@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -27,15 +26,9 @@ public class FeedController {
     private FeedService feedService;
 
     @RequestMapping("/query_by_host")
-    public FeedEntity queryByHost(@RequestParam("host") String host) {
-        logger.info("query_by_host, host: {}", JsonUtils.toJson(host));
-        return null;
-    }
-
-    @RequestMapping("/query_by_hosts")
     public List<FeedEntity> queryByHosts(@RequestParam("host") List<String> hosts) {
         logger.info("query_by_hosts, hosts: {}", JsonUtils.toJson(hosts));
-        return Collections.emptyList();
+        return feedService.queryByHost(hosts);
     }
 
     @RequestMapping("/submit_host")

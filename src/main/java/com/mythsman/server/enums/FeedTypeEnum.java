@@ -5,8 +5,9 @@ package com.mythsman.server.enums;
  * @date 6/5/21
  */
 public enum FeedTypeEnum {
-    RSS(0),
-    ATOM(1),
+    UNKNOWN(0),
+    RSS(1),
+    ATOM(2),
     ;
     int code;
 

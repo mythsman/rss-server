@@ -56,14 +56,9 @@ public class FeedEntity implements Serializable {
     private String subTitle;
 
     /**
-     * 是否使用https
-     */
-    private Boolean useSsl;
-
-    /**
      * rss订阅路径
      */
-    private String rssPath;
+    private String feedPath;
 
     /**
      * rss类型
@@ -155,20 +150,12 @@ public class FeedEntity implements Serializable {
         this.feedType = rssType;
     }
 
-    public Boolean getUseSsl() {
-        return useSsl;
+    public String getFeedPath() {
+        return feedPath;
     }
 
-    public void setUseSsl(Boolean useSsl) {
-        this.useSsl = useSsl;
-    }
-
-    public String getRssPath() {
-        return rssPath;
-    }
-
-    public void setRssPath(String rssPath) {
-        this.rssPath = rssPath;
+    public void setFeedPath(String rssPath) {
+        this.feedPath = rssPath;
     }
 
     public Date getLastModified() {
