@@ -15,7 +15,6 @@ import java.util.Date;
 public class RssSaxHandler extends DefaultHandler {
     private static final Logger logger = LoggerFactory.getLogger(RssSaxHandler.class);
 
-
     private final FeedEntity feedEntity;
 
     private final StringBuilder path = new StringBuilder();
@@ -33,8 +32,8 @@ public class RssSaxHandler extends DefaultHandler {
     }
 
     @Override
-    public void characters(char[] ch, int start, int end) throws SAXException {
-        String data = new String(ch, start, end);
+    public void characters(char[] ch, int start, int length) throws SAXException {
+        String data = new String(ch, start, length);
         switch (path.toString()) {
             case "/rss/channel/title":
                 feedEntity.setTitle(data);
