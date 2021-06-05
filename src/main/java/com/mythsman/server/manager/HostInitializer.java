@@ -16,6 +16,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.nio.file.Paths;
 import java.time.Duration;
 
 /**
@@ -67,16 +68,24 @@ public class HostInitializer implements InitializingBean {
                 return Pair.of(FeedTypeEnum.UNKNOWN, "");
             }
             if (response.body() != null) {
+
                 Document document = Jsoup.parse(response.body().string());
                 Elements rssElement = document.select(new Evaluator.AttributeWithValue("type", "application/rss+xml"));
                 String rssHref = rssElement.attr("href");
                 if (StringUtils.isNotBlank(rssHref)) {
+                    if (!rssHref.startsWith("http")) {
+                        rssHref = Paths.get(response.request().url().toString(), rssHref).toString();
+                    }
                     logger.info("feed path : {}", rssHref);
                     return Pair.of(FeedTypeEnum.RSS, rssHref);
                 }
+
                 Elements atomElement = document.select(new Evaluator.AttributeWithValue("type", "application/atom+xml"));
                 String atomHref = atomElement.attr("href");
                 if (StringUtils.isNotBlank(atomHref)) {
+                    if (!atomHref.startsWith("http")) {
+                        atomHref = Paths.get(response.request().url().toString(), atomHref).toString();
+                    }
                     logger.info("feed path : {}", atomHref);
                     return Pair.of(FeedTypeEnum.ATOM, atomHref);
                 }
