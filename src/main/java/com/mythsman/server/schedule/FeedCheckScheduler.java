@@ -45,6 +45,13 @@ public class FeedCheckScheduler implements InitializingBean {
     @Scheduled(cron = "12 * * * * ?")
     public void schedule() {
         Date checkDate = new Date(System.currentTimeMillis() - CHECK_INTERVAL_MILLIS);
+        update(checkDate);
+    }
+
+    /**
+     * @param checkDate 检测最近更新时间在此之前的feed
+     */
+    public void update(Date checkDate) {
         List<FeedEntity> normalCandidates = feedRepository.findByLastCheckTimeBeforeAndStatusOrderByLastCheckTimeAsc(checkDate, FeedStatusEnum.NORMAL.getCode());
         List<FeedEntity> abnormalCandidates = feedRepository.findByLastCheckTimeBeforeAndStatusOrderByLastCheckTimeAsc(checkDate, FeedStatusEnum.NO_RSS.getCode());
 
@@ -62,7 +69,8 @@ public class FeedCheckScheduler implements InitializingBean {
         allFuture.join();
 
         stopWatch.stop();
-        logger.info("feed check schedule done in {} ms ", stopWatch.getTime());
+
+        logger.info("feed update schedule done in {} ms ", stopWatch.getTime());
     }
 
     private void handleFeed(FeedEntity feedEntity) {
