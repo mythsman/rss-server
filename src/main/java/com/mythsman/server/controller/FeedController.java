@@ -26,9 +26,14 @@ public class FeedController {
     private FeedService feedService;
 
     @RequestMapping("/query_by_host")
-    public List<FeedEntity> queryByHosts(@RequestParam("host") List<String> hosts) {
+    public List<FeedEntity> queryByHost(@RequestParam("host") List<String> hosts) {
         logger.info("query_by_hosts, hosts: {}", JsonUtils.toJson(hosts));
         return feedService.queryByHost(hosts);
+    }
+
+    @RequestMapping("/query_all")
+    public List<FeedEntity> queryAll() {
+        return feedService.queryAll();
     }
 
     @RequestMapping("/submit_host")

@@ -58,4 +58,8 @@ public class FeedService {
     public List<FeedEntity> queryByHost(List<String> hosts) {
         return feedRepository.findByHostIn(hosts);
     }
+
+    public List<FeedEntity> queryAll() {
+        return feedRepository.findAll();
+    }
 }
