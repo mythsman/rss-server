@@ -4,7 +4,7 @@ import com.mythsman.server.entity.FeedEntity;
 import com.mythsman.server.enums.FeedStatusEnum;
 import com.mythsman.server.manager.FeedUpdater;
 import com.mythsman.server.repository.FeedRepository;
-import com.mythsman.server.util.JsonUtils;
+import org.apache.commons.lang3.time.StopWatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -12,8 +12,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -45,16 +47,22 @@ public class FeedCheckScheduler implements InitializingBean {
         Date checkDate = new Date(System.currentTimeMillis() - CHECK_INTERVAL_MILLIS);
         List<FeedEntity> normalCandidates = feedRepository.findByLastCheckTimeBeforeAndStatusOrderByLastCheckTimeAsc(checkDate, FeedStatusEnum.NORMAL.getCode());
         List<FeedEntity> abnormalCandidates = feedRepository.findByLastCheckTimeBeforeAndStatusOrderByLastCheckTimeAsc(checkDate, FeedStatusEnum.NO_RSS.getCode());
-        logger.info("normal candidates : {}", JsonUtils.toJson(normalCandidates));
-        logger.info("abnormal candidates : {}", JsonUtils.toJson(abnormalCandidates));
 
+        StopWatch stopWatch = StopWatch.createStarted();
+        List<CompletableFuture<?>> futures = new ArrayList<>();
         for (FeedEntity normalCandidate : normalCandidates) {
-            executorService.submit(() -> handleFeed(normalCandidate));
+            futures.add(CompletableFuture.runAsync(() -> handleFeed(normalCandidate), executorService));
         }
 
         for (FeedEntity abnormalCandidate : abnormalCandidates) {
-            executorService.submit(() -> handleFeed(abnormalCandidate));
+            futures.add(CompletableFuture.runAsync(() -> handleFeed(abnormalCandidate)));
         }
+
+        CompletableFuture<Void> allFuture = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+        allFuture.join();
+
+        stopWatch.stop();
+        logger.info("feed check schedule done in {} ms ", stopWatch.getTime());
     }
 
     private void handleFeed(FeedEntity feedEntity) {
