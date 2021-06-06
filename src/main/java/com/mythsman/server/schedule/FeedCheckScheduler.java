@@ -44,7 +44,7 @@ public class FeedCheckScheduler implements InitializingBean {
     public void schedule() {
         Date checkDate = new Date(System.currentTimeMillis() - CHECK_INTERVAL_MILLIS);
         List<FeedEntity> normalCandidates = feedRepository.findByLastCheckTimeBeforeAndStatusOrderByLastCheckTimeAsc(checkDate, FeedStatusEnum.NORMAL.getCode());
-        List<FeedEntity> abnormalCandidates = feedRepository.findByLastCheckTimeBeforeAndStatusOrderByLastCheckTimeAsc(checkDate, FeedStatusEnum.ABNORMAL.getCode());
+        List<FeedEntity> abnormalCandidates = feedRepository.findByLastCheckTimeBeforeAndStatusOrderByLastCheckTimeAsc(checkDate, FeedStatusEnum.NO_RSS.getCode());
         logger.info("normal candidates : {}", JsonUtils.toJson(normalCandidates));
         logger.info("abnormal candidates : {}", JsonUtils.toJson(abnormalCandidates));
 

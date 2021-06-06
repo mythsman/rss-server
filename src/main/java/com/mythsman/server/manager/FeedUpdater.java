@@ -51,7 +51,7 @@ public class FeedUpdater implements InitializingBean {
         feedEntity.setLastCheckTime(new Date());
         if (StringUtils.isBlank(feedEntity.getFeedPath())) {
             feedEntity.setFeedType(FeedTypeEnum.UNKNOWN.getCode());
-            feedEntity.setStatus(FeedStatusEnum.ABNORMAL.getCode());
+            feedEntity.setStatus(FeedStatusEnum.NO_RSS.getCode());
             return;
         }
         Request request = new Request.Builder().url(feedEntity.getFeedPath()).get().build();
@@ -60,7 +60,7 @@ public class FeedUpdater implements InitializingBean {
             response = okHttpClient.newCall(request).execute();
             if (response.code() != HttpStatus.OK.value()) {
                 feedEntity.setFeedType(FeedTypeEnum.UNKNOWN.getCode());
-                feedEntity.setStatus(FeedStatusEnum.ABNORMAL.getCode());
+                feedEntity.setStatus(FeedStatusEnum.NO_RSS.getCode());
             } else if (response.body() != null) {
                 InputStream inputStream = response.body().byteStream();
                 SAXParser saxParser = saxParserFactory.newSAXParser();
@@ -71,7 +71,7 @@ public class FeedUpdater implements InitializingBean {
                 feedEntity.setStatus(FeedStatusEnum.NORMAL.getCode());
             }
         } catch (Exception e) {
-            feedEntity.setStatus(FeedStatusEnum.ABNORMAL.getCode());
+            feedEntity.setStatus(FeedStatusEnum.NO_RSS.getCode());
             logger.error("update feed failed for {} ", feedEntity.getFeedPath(), e);
         }
     }
