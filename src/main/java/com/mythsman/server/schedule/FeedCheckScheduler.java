@@ -52,8 +52,8 @@ public class FeedCheckScheduler implements InitializingBean {
      * @param checkDate 检测最近更新时间在此之前的feed
      */
     public void update(Date checkDate) {
-        List<FeedEntity> normalCandidates = feedRepository.findByLastCheckTimeBeforeAndStatusOrderByLastCheckTimeAsc(checkDate, FeedStatusEnum.NORMAL.getCode());
-        List<FeedEntity> abnormalCandidates = feedRepository.findByLastCheckTimeBeforeAndStatusOrderByLastCheckTimeAsc(checkDate, FeedStatusEnum.NO_RSS.getCode());
+        List<FeedEntity> normalCandidates = feedRepository.findByLastCheckedBeforeAndStatusOrderByLastCheckedAsc(checkDate, FeedStatusEnum.NORMAL.getCode());
+        List<FeedEntity> abnormalCandidates = feedRepository.findByLastCheckedBeforeAndStatusOrderByLastCheckedAsc(checkDate, FeedStatusEnum.NO_RSS.getCode());
 
         StopWatch stopWatch = StopWatch.createStarted();
         List<CompletableFuture<?>> futures = new ArrayList<>();

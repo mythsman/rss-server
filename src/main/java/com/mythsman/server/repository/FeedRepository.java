@@ -13,7 +13,7 @@ import java.util.List;
  */
 public interface FeedRepository extends JpaRepository<FeedEntity, Long> {
 
-    List<FeedEntity> findByLastCheckTimeBeforeAndStatusOrderByLastCheckTimeAsc(Date lastCheckTime, Integer status);
+    List<FeedEntity> findByLastCheckedBeforeAndStatusOrderByLastCheckedAsc(Date lastCheckTime, Integer status);
 
     FeedEntity findByHost(String host);
 
