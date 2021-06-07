@@ -66,7 +66,12 @@ public class FeedUpdater implements InitializingBean {
                     saxParser.parse(inputStream, new FeedSaxHandler(feedEntity));
                 } catch (SaxParseTerminated ignored) {
                 }
-                feedEntity.setStatus(FeedStatusEnum.NORMAL.getCode());
+                if (feedEntity.getFeedType() == null) {
+                    feedEntity.setFeedType(FeedTypeEnum.UNKNOWN.getCode());
+                    feedEntity.setStatus(FeedStatusEnum.NO_RSS.getCode());
+                } else {
+                    feedEntity.setStatus(FeedStatusEnum.NORMAL.getCode());
+                }
             }
         } catch (Exception e) {
             feedEntity.setStatus(FeedStatusEnum.NO_RSS.getCode());
