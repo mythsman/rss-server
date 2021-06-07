@@ -48,7 +48,7 @@ public class FeedUpdater implements InitializingBean {
     }
 
     public void updateFeed(FeedEntity feedEntity) {
-        feedEntity.setLastCheckTime(new Date());
+        feedEntity.setLastChecked(new Date());
         if (StringUtils.isBlank(feedEntity.getFeedPath())) {
             feedEntity.setFeedType(FeedTypeEnum.UNKNOWN.getCode());
             feedEntity.setStatus(FeedStatusEnum.NO_RSS.getCode());

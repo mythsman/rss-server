@@ -38,13 +38,6 @@ public class FeedSaxHandler extends DefaultHandler {
     @Override
     public void startElement(String namespaceURI, String localName, String qualifiedName, Attributes attributes) throws SAXException {
         path.append("/").append(qualifiedName);
-        if (qualifiedName.equals("item")) {
-            throw new SaxParseTerminated();
-        }
-
-        if (qualifiedName.equals("entry")) {
-            throw new SaxParseTerminated();
-        }
     }
 
     @Override
@@ -65,8 +58,12 @@ public class FeedSaxHandler extends DefaultHandler {
                 feedEntity.setGenerator(data);
                 break;
             case "/rss/channel/lastBuildDate":
-                Date date = parseDate(data);
-                feedEntity.setLastModified(date);
+                Date buildDate = parseDate(data);
+                feedEntity.setLastModified(buildDate);
+                break;
+            case "/rss/channel/item/pubDate":
+                Date pubDate = parseDate(data);
+                feedEntity.setLastPublished(pubDate);
                 break;
             default:
                 break;
@@ -84,8 +81,12 @@ public class FeedSaxHandler extends DefaultHandler {
                 feedEntity.setGenerator(data);
                 break;
             case "/feed/updated":
-                Date date = parseDate(data);
-                feedEntity.setLastModified(date);
+                Date updated = parseDate(data);
+                feedEntity.setLastModified(updated);
+                break;
+            case "/feed/entry/published":
+                Date published = parseDate(data);
+                feedEntity.setLastPublished(published);
                 break;
             default:
                 break;
@@ -96,6 +97,13 @@ public class FeedSaxHandler extends DefaultHandler {
     @Override
     public void endElement(String namespaceURI, String localName, String qName) throws SAXException {
         path.delete(path.length() - qName.length() - 1, path.length());
+        if (qName.equals("item")) {
+            throw new SaxParseTerminated();
+        }
+
+        if (qName.equals("entry")) {
+            throw new SaxParseTerminated();
+        }
     }
 
     private Date parseDate(String text) {

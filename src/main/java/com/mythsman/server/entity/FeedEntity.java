@@ -68,11 +68,6 @@ public class FeedEntity implements Serializable {
     private Integer feedType;
 
     /**
-     * 最近更新时间
-     */
-    private Date lastModified;
-
-    /**
      * 框架
      */
     private String generator;
@@ -85,10 +80,20 @@ public class FeedEntity implements Serializable {
     private Integer status;
 
     /**
+     * 最近发布时间
+     */
+    private Date lastPublished;
+
+    /**
+     * 最近更新时间
+     */
+    private Date lastModified;
+
+    /**
      * 最近检测时间（ms）
      */
     @CreatedDate
-    private Date lastCheckTime;
+    private Date lastChecked;
 
     /**
      * 更新时间
@@ -182,12 +187,20 @@ public class FeedEntity implements Serializable {
         this.status = status;
     }
 
-    public Date getLastCheckTime() {
-        return lastCheckTime;
+    public Date getLastPublished() {
+        return lastPublished;
     }
 
-    public void setLastCheckTime(Date lastCheckTime) {
-        this.lastCheckTime = lastCheckTime;
+    public void setLastPublished(Date lastPublished) {
+        this.lastPublished = lastPublished;
+    }
+
+    public Date getLastChecked() {
+        return lastChecked;
+    }
+
+    public void setLastChecked(Date lastCheckTime) {
+        this.lastChecked = lastCheckTime;
     }
 
     public Date getGmtCreate() {
