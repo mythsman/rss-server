@@ -28,7 +28,9 @@ public class FeedSaxHandler extends DefaultHandler {
 
     private final FeedEntity feedEntity;
 
-    private final StringBuilder path = new StringBuilder();
+    private final StringBuilder pathBuilder = new StringBuilder();
+
+    private final StringBuilder characterBuilder = new StringBuilder();
 
     public FeedSaxHandler(FeedEntity feedEntity) {
         this.feedEntity = feedEntity;
@@ -36,77 +38,84 @@ public class FeedSaxHandler extends DefaultHandler {
 
     @Override
     public void startElement(String namespaceURI, String localName, String qualifiedName, Attributes attributes) throws SAXException {
-        path.append("/").append(qualifiedName);
+        pathBuilder.append("/").append(qualifiedName);
     }
 
     @Override
     public void characters(char[] ch, int start, int length) throws SAXException {
-        String data = new String(ch, start, length).trim();
-        if (path.toString().startsWith("/rss")) {
-            switch (path.toString()) {
-                case "/rss/channel/title":
-                    feedEntity.setTitle(data);
-                    feedEntity.setFeedType(FeedTypeEnum.RSS.getCode());
-                    break;
-                case "/rss/channel/description":
-                    feedEntity.setSubTitle(data);
-                    break;
-                case "/rss/channel/generator":
-                    feedEntity.setGenerator(data);
-                    break;
-                case "/rss/channel/lastBuildDate":
-                    Date buildDate = parseDate(data);
-                    feedEntity.setLastModified(buildDate);
-                    break;
-                case "/rss/channel/item/pubDate":
-                    Date pubDate = parseDate(data);
-                    feedEntity.setLastPublished(pubDate);
-                    break;
-                default:
-                    break;
-            }
-            logger.info("rss {} -> {}", path, data);
-        }
-
-        if (path.toString().startsWith("/feed")) {
-
-            switch (path.toString()) {
-                case "/feed/title":
-                    feedEntity.setTitle(data);
-                    feedEntity.setFeedType(FeedTypeEnum.ATOM.getCode());
-                    break;
-                case "/feed/subtitle":
-                    feedEntity.setSubTitle(data);
-                    break;
-                case "/feed/generator":
-                    feedEntity.setGenerator(data);
-                    break;
-                case "/feed/updated":
-                    Date updated = parseDate(data);
-                    feedEntity.setLastModified(updated);
-                    break;
-                case "/feed/entry/published":
-                    Date published = parseDate(data);
-                    feedEntity.setLastPublished(published);
-                    break;
-                default:
-                    break;
-            }
-            logger.info("atom {} -> {}", path, data);
-
-        }
+        characterBuilder.append(ch, start, length);
     }
 
     @Override
     public void endElement(String namespaceURI, String localName, String qName) throws SAXException {
-        path.delete(path.length() - qName.length() - 1, path.length());
-        if (qName.equals("item")) {
-            throw new SaxParseTerminated();
+        try {
+            String data = characterBuilder.toString().trim();
+            if (pathBuilder.toString().startsWith("/rss")) {
+                processRss(data);
+            } else if (pathBuilder.toString().startsWith("/feed")) {
+                processAtom(data);
+            }
+        } finally {
+            pathBuilder.delete(pathBuilder.length() - qName.length() - 1, pathBuilder.length());
+            characterBuilder.setLength(0);
         }
+    }
 
-        if (qName.equals("entry")) {
-            throw new SaxParseTerminated();
+    private void processRss(String data) {
+        switch (pathBuilder.toString()) {
+            case "/rss/channel/title":
+                feedEntity.setTitle(data);
+                feedEntity.setFeedType(FeedTypeEnum.RSS.getCode());
+                break;
+            case "/rss/channel/description":
+                feedEntity.setSubTitle(data);
+                break;
+            case "/rss/channel/generator":
+                feedEntity.setGenerator(data);
+                break;
+            case "/rss/channel/lastBuildDate":
+                Date buildDate = parseDate(data);
+                feedEntity.setLastModified(buildDate);
+                break;
+            case "/rss/channel/item/pubDate":
+                Date pubDate = parseDate(data);
+                feedEntity.setLastPublished(pubDate);
+                break;
+            case "/rss/channel/item":
+                throw new SaxParseTerminated();
+            default:
+                return;
         }
+        logger.info("{} rss {} -> {}", feedEntity.getHost(), pathBuilder, data);
+    }
+
+
+    private void processAtom(String data) {
+        switch (pathBuilder.toString()) {
+            case "/feed/title":
+                feedEntity.setTitle(data);
+                feedEntity.setFeedType(FeedTypeEnum.ATOM.getCode());
+                break;
+            case "/feed/subtitle":
+                feedEntity.setSubTitle(data);
+                break;
+            case "/feed/generator":
+                feedEntity.setGenerator(data);
+                break;
+            case "/feed/updated":
+                Date updated = parseDate(data);
+                feedEntity.setLastModified(updated);
+                break;
+            case "/feed/entry/published":
+                Date published = parseDate(data);
+                feedEntity.setLastPublished(published);
+                break;
+            case "/feed/entry":
+                throw new SaxParseTerminated();
+            default:
+                return;
+        }
+        logger.info("{} atom {} -> {}", feedEntity.getHost(), pathBuilder, data);
     }
 
     private Date parseDate(String text) {

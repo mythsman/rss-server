@@ -15,7 +15,6 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.regex.Pattern;
 
@@ -76,8 +75,8 @@ public class HostInitializer implements InitializingBean {
                     if (StringUtils.isNotBlank(feedHref)) {
                         if (feedHref.startsWith("//")) {
                             feedHref = "https:" + feedHref;
-                        } else if (!feedHref.startsWith("http")) {
-                            feedHref = Paths.get(response.request().url().toString(), feedHref).toString();
+                        } else {
+                            feedHref = response.request().url().uri().resolve(feedHref).toString();
                         }
                         logger.info("feed path : {}", feedHref);
 
