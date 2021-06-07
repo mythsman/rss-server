@@ -61,9 +61,7 @@ public class HostInitializer implements InitializingBean {
      */
     private FeedEntity fetchFeedUrl(String url) {
         Request request = new Request.Builder().url(url).get().build();
-        Response response;
-        try {
-            response = okHttpClient.newCall(request).execute();
+        try (Response response = okHttpClient.newCall(request).execute()) {
             if (response.code() != HttpStatus.OK.value()) {
                 return null;
             }
