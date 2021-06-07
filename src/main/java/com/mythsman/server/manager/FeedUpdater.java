@@ -55,7 +55,6 @@ public class FeedUpdater implements InitializingBean {
             return;
         }
         Request request = new Request.Builder().url(feedEntity.getFeedPath()).get().build();
-        ;
         try (Response response = okHttpClient.newCall(request).execute()) {
             if (response.code() != HttpStatus.OK.value()) {
                 feedEntity.setFeedType(FeedTypeEnum.UNKNOWN.getCode());

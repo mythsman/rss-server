@@ -3,6 +3,7 @@ package com.mythsman.server.manager.parser;
 import com.mythsman.server.entity.FeedEntity;
 import com.mythsman.server.enums.FeedTypeEnum;
 import com.mythsman.server.exceptions.SaxParseTerminated;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,6 +50,9 @@ public class FeedSaxHandler extends DefaultHandler {
     @Override
     public void characters(char[] ch, int start, int length) throws SAXException {
         String data = new String(ch, start, length).trim();
+        if (StringUtils.isBlank(data)) {
+            return;
+        }
         switch (path.toString()) {
             case "/rss/channel/title":
                 feedEntity.setTitle(data);

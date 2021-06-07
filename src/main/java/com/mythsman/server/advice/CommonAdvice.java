@@ -36,12 +36,13 @@ public class CommonAdvice implements ResponseBodyAdvice<Object> {
 
     @Override
     public Object beforeBodyWrite(Object body, MethodParameter returnType, MediaType selectedContentType, Class<? extends HttpMessageConverter<?>> selectedConverterType, ServerHttpRequest request, ServerHttpResponse response) {
+        Object result = body;
         if (!(body instanceof BaseResponse)) {
             BaseResponse wrappedResult = new BaseResponse();
             wrappedResult.setSuccess(true);
             wrappedResult.setResult(body);
-            return wrappedResult;
+            result = wrappedResult;
         }
-        return body;
+        return result;
     }
 }
