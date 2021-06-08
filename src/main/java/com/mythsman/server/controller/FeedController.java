@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -46,12 +47,16 @@ public class FeedController {
     }
 
     @RequestMapping("/submit_host")
-    public void submitHost(@RequestParam("host") List<String> hosts) {
+    public List<FeedEntity> submitHost(@RequestParam("host") List<String> hosts) {
+        List<FeedEntity> list = new ArrayList<>();
         for (String host : hosts) {
             if (HOST_PATTERN.matcher(host).matches()) {
-                feedService.submitHost(host.toLowerCase().trim());
+                FeedEntity entity = feedService.submitHost(host.toLowerCase().trim());
+                if (entity != null) {
+                    list.add(entity);
+                }
             }
         }
+        return list;
     }
-
 }

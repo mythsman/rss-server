@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * @author tusenpo
@@ -44,12 +43,9 @@ public class FeedService {
         entity = hostInitializer.submit(host);
         if (entity != null && StringUtils.isNotBlank(entity.getTitle())) {
             entity.setHost(host);
-            FeedEntity finalEntity = entity;
-            CompletableFuture.runAsync(() -> {
-                feedUpdater.updateFeed(finalEntity);
-                finalEntity.setUuid(UUIDUtils.createUUID());
-                feedRepository.save(finalEntity);
-            });
+            feedUpdater.updateFeed(entity);
+            entity.setUuid(UUIDUtils.createUUID());
+            feedRepository.save(entity);
             return entity;
         }
         return null;
