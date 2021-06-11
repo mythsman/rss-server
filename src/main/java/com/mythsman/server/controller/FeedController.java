@@ -3,8 +3,6 @@ package com.mythsman.server.controller;
 import com.mythsman.server.entity.FeedEntity;
 import com.mythsman.server.schedule.FeedCheckScheduler;
 import com.mythsman.server.service.FeedService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -22,7 +20,6 @@ import java.util.regex.Pattern;
 @RestController
 @RequestMapping("/feed")
 public class FeedController {
-    private static final Logger logger = LoggerFactory.getLogger(FeedController.class);
     private static final Pattern HOST_PATTERN = Pattern.compile("^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])$");
 
     @Autowired
